@@ -1,0 +1,25 @@
+<ng-container *ngIf="routeView$ | async as routeView">
+  <ng-container *ngIf="routeView.hideShell; else appShell">
+    <router-outlet></router-outlet>
+  </ng-container>
+
+  <ng-template #appShell>
+    <div class="app-shell" [class.app-shell--sidebar-open]="sidebarOpen">
+      <app-sidebar [isOpen]="sidebarOpen"></app-sidebar>
+
+      <div class="app-shell__overlay" (click)="closeSidebar()"></div>
+
+      <div class="app-shell__main">
+        <app-header
+          [title]="routeView.title"
+          [subtitle]="routeView.subtitle"
+          (toggleSidebar)="toggleSidebar()"
+        ></app-header>
+
+        <main class="app-shell__content">
+          <router-outlet></router-outlet>
+        </main>
+      </div>
+    </div>
+  </ng-template>
+</ng-container>

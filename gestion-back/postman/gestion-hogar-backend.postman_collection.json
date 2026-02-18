@@ -1,0 +1,323 @@
+{
+  "info": {
+    "_postman_id": "2f3d6d21-5d7f-4fb2-b5d9-9f0e36e74091",
+    "name": "Gestion Hogar Backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección para probar users/auth/expenses con JWT y familia por teléfonos."
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "mainPhone", "value": "1159463518" },
+    { "key": "secondaryPhone", "value": "1160000001" },
+    { "key": "expensePhone", "value": "1159463518" },
+    { "key": "token", "value": "" },
+    { "key": "startDate", "value": "2026-01-01T00:00:00.000Z" },
+    { "key": "endDate", "value": "2026-12-31T23:59:59.999Z" }
+  ],
+  "item": [
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User (main phone)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{mainPhone}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"]
+            }
+          }
+        },
+        {
+          "name": "Add Secondary Phone",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{secondaryPhone}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{mainPhone}}/secondary",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{mainPhone}}", "secondary"]
+            }
+          }
+        },
+        {
+          "name": "Get User By Main Phone",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/users/{{mainPhone}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{mainPhone}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Request Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{mainPhone}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/request-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "request-code"]
+            }
+          }
+        },
+        {
+          "name": "Verify Code (123456)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.accessToken);",
+                  "}",
+                  "if (json && json.user && json.user.mainPhone) {",
+                  "  pm.collectionVariables.set('mainPhone', json.user.mainPhone);",
+                  "}",
+                  "pm.test('Token guardado en variable {{token}}', function () {",
+                  "  pm.expect(pm.collectionVariables.get('token')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{mainPhone}}\",\n  \"code\": \"123456\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-code",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-code"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Expenses (JWT)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          { "key": "token", "value": "{{token}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "Create Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"{{expensePhone}}\",\n  \"description\": \"Compra supermercado\",\n  \"amount\": 1500,\n  \"category\": \"Groceries\",\n  \"date\": \"2026-02-18T18:30:00.000Z\",\n  \"isFamilyShared\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expenses",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses"]
+            }
+          }
+        },
+        {
+          "name": "Get All Expenses",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses?start={{startDate}}&end={{endDate}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses"],
+              "query": [
+                { "key": "start", "value": "{{startDate}}" },
+                { "key": "end", "value": "{{endDate}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Recent",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/recent?limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "recent"],
+              "query": [
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get By Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/by-category",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "by-category"]
+            }
+          }
+        },
+        {
+          "name": "Get Daily Trend",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/daily-trend",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "daily-trend"]
+            }
+          }
+        },
+        {
+          "name": "Get Breakdown",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/breakdown?limit=4",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "breakdown"],
+              "query": [
+                { "key": "limit", "value": "4" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Monthly Summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/monthly-summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "monthly-summary"]
+            }
+          }
+        },
+        {
+          "name": "Get Insights",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/expenses/insights",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "insights"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories (JWT)",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          { "key": "token", "value": "{{token}}", "type": "string" }
+        ]
+      },
+      "item": [
+        {
+          "name": "Create Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carnicería\",\n  \"description\": \"Compras de carne\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories"]
+            }
+          }
+        },
+        {
+          "name": "Update Category",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Carnicería Premium\",\n  \"description\": \"Compras de carne y embutidos\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                { "key": "id", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["categories", ":id"],
+              "variable": [
+                { "key": "id", "value": "" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

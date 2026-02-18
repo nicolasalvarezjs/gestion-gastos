@@ -1,0 +1,167 @@
+<div class="page">
+  <div class="page__inner dashboard">
+    <section class="kpi-grid">
+      <article class="kpi-card kpi-card--primary" *ngIf="monthlySummary$ | async as summary">
+        <div class="kpi-card__label">
+          <span class="material-symbols-outlined">account_balance</span>
+          <span>{{ 'kpi.totalSpending' | translate }}</span>
+        </div>
+        <div>
+          <h2>{{ formatAmount(summary.currentTotal) }}</h2>
+          <p>
+            {{ 'kpi.totalSpendingRangeDynamic' | translate: getPeriodRange(summary) }}
+          </p>
+        </div>
+      </article>
+
+      <article class="kpi-card kpi-card--trend" *ngIf="monthlySummary$ | async as summary">
+        <div class="kpi-card__label">
+          <span class="material-symbols-outlined">trending_down</span>
+          <span>{{ 'kpi.vsLastMonth' | translate }}</span>
+        </div>
+        <div class="kpi-card__trend">
+          <h2 class="kpi-card__trend-value">{{ getDeltaPercent(summary) }}</h2>
+          <span class="kpi-card__pill">{{ formatAmount(summary.delta) }}</span>
+        </div>
+        <p class="kpi-card__note">{{ getDeltaMessage(summary) | translate }}</p>
+      </article>
+
+      <article class="kpi-card kpi-card--category" *ngIf="topCategory$ | async as topCategory">
+        <div class="kpi-card__label">
+          <span class="material-symbols-outlined">shopping_cart</span>
+          <span>{{ 'kpi.topCategory' | translate }}</span>
+        </div>
+        <div class="kpi-card__category">
+          <h3>{{ getCategoryLabelKey(topCategory.category) | translate }}</h3>
+          <div class="kpi-card__progress">
+            <div class="kpi-card__progress-track">
+              <div class="kpi-card__progress-fill" [style.width.%]="topCategory.percentage"></div>
+            </div>
+            <span>{{ formatAmount(topCategory.total) }}</span>
+          </div>
+        </div>
+        <p>
+          {{ 'kpi.topCategoryShareDynamic' | translate: { percentage: topCategory.percentage.toString() } }}
+        </p>
+      </article>
+    </section>
+
+    <section class="chart-grid">
+      <article class="chart-card">
+        <div class="chart-card__header">
+          <h3>{{ 'chart.spendingByCategory' | translate }}</h3>
+          <a routerLink="/analysis">{{ 'chart.viewDetails' | translate }}</a>
+        </div>
+        <div class="chart-card__body" *ngIf="categoryChartData$ | async as categoryChartData">
+          <canvas
+            baseChart
+            [data]="categoryChartData"
+            [options]="categoryChartOptions"
+            [type]="'bar'"
+          ></canvas>
+        </div>
+      </article>
+
+      <article class="chart-card">
+        <div class="chart-card__header">
+          <div>
+            <h3>{{ 'chart.dailyTrend' | translate }}</h3>
+            <p *ngIf="avgDailySpending$ | async as avgDailySpending">
+              {{ 'chart.avgPerDayValue' | translate: { amount: formatAmount(avgDailySpending) } }}
+            </p>
+          </div>
+        </div>
+        <div class="chart-card__body" *ngIf="trendChartData$ | async as trendChartData">
+          <canvas
+            baseChart
+            [data]="trendChartData"
+            [options]="trendChartOptions"
+            [type]="'line'"
+          ></canvas>
+        </div>
+      </article>
+    </section>
+
+    <section class="recent-card">
+      <div class="recent-card__header">
+        <h3>{{ 'table.recentExpenses' | translate }}</h3>
+        <div class="recent-card__actions">
+          <button type="button">
+            <span class="material-symbols-outlined">filter_list</span>
+            {{ 'table.filter' | translate }}
+          </button>
+          <button type="button">
+            <span class="material-symbols-outlined">download</span>
+            {{ 'table.export' | translate }}
+          </button>
+        </div>
+      </div>
+
+      <div class="recent-card__table-wrapper" *ngIf="recentTransactions$ | async as recentTransactions">
+        <table>
+          <thead>
+            <tr>
+              <th>{{ 'table.date' | translate }}</th>
+              <th>{{ 'table.description' | translate }}</th>
+              <th>{{ 'table.category' | translate }}</th>
+              <th class="text-right">{{ 'table.amount' | translate }}</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let tx of recentTransactions">
+              <td class="text-sub">{{ tx.date | date: 'MMM dd, yyyy' }}</td>
+              <td>
+                <div class="recent-card__desc">
+                  <div class="recent-card__icon" [ngClass]="getCategoryMeta(tx.category).chipClass">
+                    <span class="material-symbols-outlined">
+                      {{ getCategoryMeta(tx.category).icon }}
+                    </span>
+                  </div>
+                  <span>{{ tx.description }}</span>
+                </div>
+              </td>
+              <td>
+                <span class="recent-card__badge" [ngClass]="getCategoryMeta(tx.category).badgeClass">
+                  {{ getCategoryLabelKey(tx.category) | translate }}
+                </span>
+              </td>
+              <td class="text-right amount">{{ formatExpenseAmount(tx) }}</td>
+              <td class="text-right">
+                <button class="icon-button" type="button">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="recent-card__list" *ngIf="recentTransactions$ | async as recentTransactions">
+        <article class="recent-card__list-item" *ngFor="let tx of recentTransactions">
+          <div class="recent-card__list-main">
+            <div class="recent-card__icon" [ngClass]="getCategoryMeta(tx.category).chipClass">
+              <span class="material-symbols-outlined">
+                {{ getCategoryMeta(tx.category).icon }}
+              </span>
+            </div>
+            <div class="recent-card__list-text">
+              <div class="recent-card__list-title">{{ tx.description }}</div>
+              <div class="recent-card__list-sub">
+                <span class="text-sub">{{ tx.date | date: 'MMM dd, yyyy' }}</span>
+                <span class="recent-card__badge" [ngClass]="getCategoryMeta(tx.category).badgeClass">
+                  {{ getCategoryLabelKey(tx.category) | translate }}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="recent-card__list-amount">{{ formatExpenseAmount(tx) }}</div>
+        </article>
+      </div>
+
+      <div class="recent-card__footer">
+        <a routerLink="/history">{{ 'table.viewAll' | translate }}</a>
+      </div>
+    </section>
+  </div>
+</div>

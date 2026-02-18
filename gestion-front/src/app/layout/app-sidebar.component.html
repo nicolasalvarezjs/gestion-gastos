@@ -1,0 +1,54 @@
+<aside class="sidebar" [class.sidebar--open]="isOpen">
+  <div class="sidebar__brand">
+    <div class="sidebar__brand-icon">
+      <span class="material-symbols-outlined">account_balance_wallet</span>
+    </div>
+    <div class="sidebar__brand-text">
+      <span class="sidebar__brand-title">{{ 'app.brandTitle' | translate }}</span>
+      <span class="sidebar__brand-subtitle">{{ 'app.brandSubtitle' | translate }}</span>
+    </div>
+  </div>
+
+  <nav class="sidebar__nav">
+    <a
+      class="sidebar__link"
+      *ngFor="let item of items"
+      [routerLink]="item.path"
+      routerLinkActive="is-active"
+    >
+      <span class="material-symbols-outlined">{{ item.icon }}</span>
+      <span class="sidebar__link-text">{{ item.labelKey | translate }}</span>
+    </a>
+
+    <a
+      class="sidebar__link"
+      [routerLink]="analysisItem.path"
+      routerLinkActive="is-active"
+    >
+      <span class="material-symbols-outlined">{{ analysisItem.icon }}</span>
+      <span class="sidebar__link-text">{{ analysisItem.labelKey | translate }}</span>
+    </a>
+  </nav>
+
+  <div class="sidebar__footer">
+    <a
+      class="sidebar__link sidebar__link--settings"
+      [routerLink]="settingsItem.path"
+      routerLinkActive="is-active"
+    >
+      <span class="material-symbols-outlined">{{ settingsItem.icon }}</span>
+      <span class="sidebar__link-text">{{ settingsItem.labelKey | translate }}</span>
+    </a>
+
+    <div class="sidebar__profile">
+      <img
+        src="https://picsum.photos/id/64/100/100"
+        alt="Jane Doe"
+      />
+      <div class="sidebar__profile-text">
+        <p>Jane Doe</p>
+          <span>{{ 'profile.plan' | translate }}</span>
+      </div>
+    </div>
+  </div>
+</aside>

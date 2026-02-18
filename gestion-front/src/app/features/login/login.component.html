@@ -1,0 +1,30 @@
+<div class="login">
+  <div class="login__card">
+    <h1>{{ 'login.title' | translate }}</h1>
+    <p>{{ 'login.subtitle' | translate }}</p>
+
+    <form *ngIf="step() === 1" (ngSubmit)="requestCode()" class="login__form">
+      <label>
+        <span>{{ 'login.phone' | translate }}</span>
+        <input type="tel" [(ngModel)]="phone" name="phone" required />
+      </label>
+
+      <button type="submit" [disabled]="isLoading() || !phone">
+        {{ isLoading() ? ('login.loading' | translate) : ('login.sendCode' | translate) }}
+      </button>
+    </form>
+
+    <form *ngIf="step() === 2" (ngSubmit)="verifyCode()" class="login__form">
+      <label>
+        <span>{{ 'login.code' | translate }}</span>
+        <input type="text" maxlength="6" [(ngModel)]="code" name="code" required />
+      </label>
+
+      <button type="submit" [disabled]="isLoading() || code.length !== 6">
+        {{ isLoading() ? ('login.loading' | translate) : ('login.verify' | translate) }}
+      </button>
+    </form>
+
+    <p class="login__error" *ngIf="errorMessage()">{{ errorMessage()! | translate }}</p>
+  </div>
+</div>

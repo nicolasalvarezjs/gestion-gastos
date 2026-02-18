@@ -1,0 +1,133 @@
+<div class="page">
+  <div class="page__inner analysis">
+    <div class="analysis__header">
+      <nav class="breadcrumbs">
+        <a routerLink="/dashboard">{{ 'nav.dashboard' | translate }}</a>
+        <span class="material-symbols-outlined">chevron_right</span>
+        <span class="highlight">{{ 'analysis.breadcrumbHighlight' | translate }}</span>
+      </nav>
+
+      <div class="analysis__hero">
+        <div class="analysis__title">
+          <div class="analysis__icon">
+            <span class="material-symbols-outlined">shopping_cart</span>
+          </div>
+          <div>
+            <h1>{{ 'analysis.title' | translate }}</h1>
+            <p>{{ 'analysis.subtitle' | translate }}</p>
+          </div>
+        </div>
+        <button class="analysis__daterange" type="button">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span *ngIf="monthlySummary$ | async as summary">
+            {{ 'analysis.dateRangeDynamic' | translate: getDateRangeLabel(summary.periodStart, summary.periodEnd) }}
+          </span>
+          <span class="material-symbols-outlined">expand_more</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="analysis__main-card">
+      <div class="analysis__main-header desktop-only" *ngIf="monthlySummary$ | async as summary">
+        <div>
+          <p class="label">{{ 'analysis.totalSpending' | translate }}</p>
+          <div class="analysis__total">
+            <h2>{{ formatAmount(summary.currentTotal) }}</h2>
+            <span class="analysis__chip">
+              <span class="material-symbols-outlined">trending_down</span>
+              {{ 'analysis.vsLastPeriodDynamic' | translate: getDeltaLabel(summary.deltaPercent) }}
+            </span>
+          </div>
+        </div>
+        <div class="analysis__toggle">
+          <button class="is-active" type="button">{{ 'analysis.toggleMonthly' | translate }}</button>
+          <button type="button">{{ 'analysis.toggleWeekly' | translate }}</button>
+        </div>
+      </div>
+
+      <div class="analysis__mobile-summary mobile-only" *ngIf="monthlySummary$ | async as summary">
+        <p class="label">{{ 'analysis.totalSpending' | translate }}</p>
+        <h2>{{ formatAmount(summary.currentTotal) }}</h2>
+        <span class="analysis__chip">
+          <span class="material-symbols-outlined">trending_down</span>
+          {{ 'analysis.vsLastPeriodDynamic' | translate: getDeltaLabel(summary.deltaPercent) }}
+        </span>
+      </div>
+
+      <div class="analysis__chart" *ngIf="analysisChartData$ | async as analysisChartData">
+        <canvas
+          baseChart
+          [data]="analysisChartData"
+          [options]="analysisChartOptions"
+          [type]="'line'"
+        ></canvas>
+      </div>
+    </section>
+
+    <section class="analysis__insights">
+      <article class="insight-card" *ngFor="let insight of (insights$ | async) ?? []">
+        <div class="insight-card__icon" [ngClass]="insight.colorClass">
+          <span class="material-symbols-outlined">{{ insight.icon }}</span>
+        </div>
+        <p class="insight-card__title">{{ insight.titleKey ? (insight.titleKey | translate) : insight.title }}</p>
+        <p class="insight-card__text">{{ insight.textKey ? (insight.textKey | translate) : insight.text }}</p>
+      </article>
+    </section>
+
+    <section class="analysis__breakdown">
+      <h3>{{ 'analysis.breakdownTitle' | translate }}</h3>
+      <div class="breakdown">
+        <div class="breakdown__header">
+          <div>{{ 'analysis.breakdownDate' | translate }}</div>
+          <div>{{ 'analysis.breakdownMerchant' | translate }}</div>
+          <div>{{ 'analysis.breakdownSubCategory' | translate }}</div>
+          <div class="text-right">{{ 'analysis.breakdownAmount' | translate }}</div>
+        </div>
+        <div class="breakdown__rows">
+          <div class="breakdown__row" *ngFor="let item of (breakdown$ | async) ?? []">
+            <div class="text-sub">{{ item.date }}</div>
+            <div class="breakdown__merchant">
+              <span class="material-symbols-outlined">store</span>
+              <span>{{ item.merchant }}</span>
+            </div>
+            <div>
+              <span class="breakdown__chip">{{ getSubCategoryLabelKey(item.subCategory) | translate }}</span>
+            </div>
+            <div class="text-right">${{ item.amount.toFixed(2) }}</div>
+          </div>
+        </div>
+        <div class="breakdown__footer">
+          <p *ngIf="breakdownCount$ | async as count">
+            {{ 'analysis.breakdownFooterDynamic' | translate: { count: count.toString() } }}
+          </p>
+          <div class="breakdown__pager">
+            <button type="button">
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+            <button type="button">
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="breakdown__list" *ngIf="(breakdown$ | async) ?? [] as breakdownList">
+        <article class="breakdown__list-item" *ngFor="let item of breakdownList">
+          <div class="breakdown__list-header">
+            <div class="text-sub">{{ item.date }}</div>
+            <div class="breakdown__list-amount">${{ item.amount.toFixed(2) }}</div>
+          </div>
+          <div class="breakdown__merchant">
+            <span class="material-symbols-outlined">store</span>
+            <span>{{ item.merchant }}</span>
+          </div>
+          <span class="breakdown__chip">{{ getSubCategoryLabelKey(item.subCategory) | translate }}</span>
+        </article>
+      </div>
+    </section>
+
+    <div class="analysis__copyright">
+      {{ 'app.footer' | translate }}
+    </div>
+  </div>
+</div>

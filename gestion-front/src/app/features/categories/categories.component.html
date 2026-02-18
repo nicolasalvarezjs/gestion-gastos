@@ -1,0 +1,62 @@
+<div class="page">
+  <div class="page__inner categories">
+    <section class="categories__form-card">
+      <h2>
+        {{ editingId ? ('categories.editTitle' | translate) : ('categories.createTitle' | translate) }}
+      </h2>
+
+      <form (ngSubmit)="submit()" class="categories__form">
+        <label>
+          <span>{{ 'categories.name' | translate }}</span>
+          <input type="text" [(ngModel)]="name" name="name" required maxlength="50" />
+        </label>
+
+        <label>
+          <span>{{ 'categories.description' | translate }}</span>
+          <textarea [(ngModel)]="description" name="description" rows="3" maxlength="120"></textarea>
+        </label>
+
+        <div class="categories__actions">
+          <button class="btn-primary" type="submit" [disabled]="loading() || !name.trim()">
+            {{ editingId ? ('categories.update' | translate) : ('categories.create' | translate) }}
+          </button>
+          <button class="btn-ghost" type="button" (click)="resetForm()" [disabled]="loading()">
+            {{ 'categories.clear' | translate }}
+          </button>
+        </div>
+      </form>
+
+      <p class="categories__error" *ngIf="error()">{{ error()! | translate }}</p>
+    </section>
+
+    <section class="categories__list-card">
+      <div class="categories__list-header">
+        <h3>{{ 'categories.listTitle' | translate }}</h3>
+        <button class="btn-ghost" type="button" (click)="loadCategories()" [disabled]="loading()">
+          {{ 'categories.refresh' | translate }}
+        </button>
+      </div>
+
+      <p class="categories__empty" *ngIf="!loading() && categories().length === 0">
+        {{ 'categories.empty' | translate }}
+      </p>
+
+      <div class="categories__list" *ngIf="categories().length > 0">
+        <article class="categories__item" *ngFor="let category of categories()">
+          <div class="categories__item-content">
+            <h4>{{ category.name }}</h4>
+            <p>{{ category.description || ('categories.noDescription' | translate) }}</p>
+          </div>
+          <div class="categories__item-actions">
+            <button class="btn-ghost" type="button" (click)="edit(category)">
+              {{ 'categories.edit' | translate }}
+            </button>
+            <button class="btn-danger" type="button" (click)="remove(category._id)">
+              {{ 'categories.delete' | translate }}
+            </button>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</div>
