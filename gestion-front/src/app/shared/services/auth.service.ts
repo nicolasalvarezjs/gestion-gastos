@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-
-const API_BASE_URL = 'http://localhost:3000';
+import { environment } from '../../../environments/environment';
 const TOKEN_KEY = 'auth.token';
 
 interface AuthUser {
@@ -27,14 +26,14 @@ export class AuthService {
   constructor(private readonly http: HttpClient) {}
 
   requestCode(phone: string): Observable<{ success: boolean; message: string }> {
-    return this.http.post<{ success: boolean; message: string }>(`${API_BASE_URL}/auth/request-code`, {
+    return this.http.post<{ success: boolean; message: string }>(`${environment.apiBaseUrl}/auth/request-code`, {
       phone
     });
   }
 
   verifyCode(phone: string, code: string): Observable<VerifyResponse> {
     return this.http
-      .post<VerifyResponse>(`${API_BASE_URL}/auth/verify-code`, { phone, code })
+      .post<VerifyResponse>(`${environment.apiBaseUrl}/auth/verify-code`, { phone, code })
       .pipe(tap((response) => this.setSession(response.accessToken, response.user)));
   }
 
