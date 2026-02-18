@@ -18,7 +18,6 @@ interface RequestUser {
 }
 
 @Controller('expenses')
-@UseGuards(JwtAuthGuard)
 export class ExpensesController {
   constructor(private readonly expensesService: ExpensesService) {}
 
