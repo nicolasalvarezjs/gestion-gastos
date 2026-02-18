@@ -156,6 +156,24 @@
           }
         },
         {
+          "name": "Create Expenses (Bulk)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expenses\": [\n    {\n      \"phone\": \"{{expensePhone}}\",\n      \"description\": \"Compra supermercado\",\n      \"amount\": 1500,\n      \"category\": \"Groceries\",\n      \"date\": \"2026-02-18T18:30:00.000Z\",\n      \"isFamilyShared\": true\n    },\n    {\n      \"phone\": \"{{expensePhone}}\",\n      \"description\": \"Farmacia\",\n      \"amount\": 420,\n      \"category\": \"Salud\",\n      \"date\": \"2026-02-18T20:10:00.000Z\",\n      \"isFamilyShared\": false\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/expenses/bulk",
+              "host": ["{{baseUrl}}"],
+              "path": ["expenses", "bulk"]
+            }
+          }
+        },
+        {
           "name": "Get All Expenses",
           "request": {
             "method": "GET",

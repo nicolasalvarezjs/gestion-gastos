@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, Query, Request, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { CreateExpensesDto } from './dto/create-expenses.dto';
 import { ExpensesQueryDto } from './dto/expenses-query.dto';
 import { ExpensesService } from './expenses.service';
 import {
@@ -25,6 +25,11 @@ export class ExpensesController {
   async create(@Request() req: RequestUser, @Body() dto: CreateExpenseDto) {
     await this.expensesService.assertExpensePhoneBelongsToFamily(req.user.mainPhone, dto.phone);
     return this.expensesService.create(req.user.mainPhone, dto);
+  }
+
+  @Post('bulk')
+  async createMany(@Request() req: RequestUser, @Body() dto: CreateExpensesDto) {
+    return this.expensesService.createMany(req.user.mainPhone, dto.expenses);
   }
 
   @Get()

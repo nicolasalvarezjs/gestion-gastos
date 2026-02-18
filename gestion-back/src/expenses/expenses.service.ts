@@ -36,6 +36,31 @@ export class ExpensesService {
     return created.save();
   }
 
+  async createMany(mainPhone: string, dtos: CreateExpenseDto[]): Promise<Expense[]> {
+    const familyPhones = await this.usersService.getFamilyPhones(mainPhone);
+
+    const prepared = await Promise.all(
+      dtos.map(async (dto) => {
+        if (!familyPhones.includes(dto.phone)) {
+          throw new BadRequestException('Expense phone is not part of this family.');
+        }
+
+        const normalizedCategory = await this.categoriesService.assertCategoryExists(
+          mainPhone,
+          dto.category
+        );
+
+        return {
+          ...dto,
+          category: normalizedCategory,
+          date: new Date(dto.date)
+        };
+      })
+    );
+
+    return this.expenseModel.insertMany(prepared);
+  }
+
   async findAll(mainPhone: string, query: ExpensesQueryDto): Promise<Expense[]> {
     const filter = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
     return this.expenseModel.find(filter).sort({ date: -1 }).exec();
