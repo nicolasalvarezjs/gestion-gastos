@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { AuthService } from './auth.service';
 import {
   BreakdownItem,
   CategorySummary,
@@ -13,7 +14,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class ExpensesService {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient, private readonly authService: AuthService) {}
 
   getAll(params?: { start?: string; end?: string }): Observable<Expense[]> {
     return this.http.get<Expense[]>(`${environment.apiBaseUrl}/expenses`, {
@@ -52,14 +53,20 @@ export class ExpensesService {
   }
 
   getInsights(): Observable<InsightCard[]> {
-    return this.http.get<InsightCard[]>(`${environment.apiBaseUrl}/expenses/insights`);
+    return this.http.get<InsightCard[]>(`${environment.apiBaseUrl}/expenses/insights`, {
+      params: this.buildParams()
+    });
   }
 
   private buildParams(params?: Record<string, string | undefined>): HttpParams | undefined {
-    if (!params) {
-      return undefined;
-    }
+    const activePhone = this.authService.activePhone() ?? this.authService.user()?.mainPhone;
     let httpParams = new HttpParams();
+    if (activePhone) {
+      httpParams = httpParams.set('phone', activePhone);
+    }
+    if (!params) {
+      return activePhone ? httpParams : undefined;
+    }
     Object.entries(params).forEach(([key, value]) => {
       if (value) {
         httpParams = httpParams.set(key, value);
