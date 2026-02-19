@@ -10,12 +10,12 @@ export class CategoriesService {
   constructor(private readonly http: HttpClient, private readonly authService: AuthService) {}
 
   private buildPhoneParams(): HttpParams | null {
-    const phone = this.authService.user()?.mainPhone;
+    const phone = this.authService.activePhone() ?? this.authService.user()?.mainPhone;
     return phone ? new HttpParams().set('phone', phone) : null;
   }
 
   private withPhone<T extends { phone?: string }>(dto: T): T {
-    const phone = this.authService.user()?.mainPhone;
+    const phone = this.authService.activePhone() ?? this.authService.user()?.mainPhone;
     if (!phone || dto.phone) {
       return dto;
     }

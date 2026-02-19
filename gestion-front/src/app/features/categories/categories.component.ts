@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
@@ -10,7 +10,7 @@ import { CategoriesService } from '../../shared/services/categories.service';
   selector: 'app-categories',
   templateUrl: './categories.component.html',
   styleUrl: './categories.component.scss',
-  imports: [NgIf, NgFor, AsyncPipe, FormsModule, TranslatePipe],
+  imports: [NgIf, NgFor, FormsModule, TranslatePipe],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CategoriesComponent {

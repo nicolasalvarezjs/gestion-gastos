@@ -26,6 +26,8 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.isLoading.set(true);
 
+    this.authService.setActivePhone(this.phone);
+
     this.authService.requestCode(this.phone).subscribe({
       next: () => {
         this.step.set(2);
@@ -41,6 +43,8 @@ export class LoginComponent {
   verifyCode(): void {
     this.errorMessage.set(null);
     this.isLoading.set(true);
+
+    this.authService.setActivePhone(this.phone);
 
     this.authService.verifyCode(this.phone, this.code).subscribe({
       next: () => {
