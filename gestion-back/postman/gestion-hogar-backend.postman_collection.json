@@ -280,7 +280,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Carnicería\",\n  \"description\": \"Compras de carne\"\n}"
+              "raw": "{\n  \"phone\": \"{{mainPhone}}\",\n  \"name\": \"Carnicería\",\n  \"description\": \"Compras de carne\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/categories",
@@ -294,9 +294,12 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/categories",
+              "raw": "{{baseUrl}}/categories?phone={{mainPhone}}",
               "host": ["{{baseUrl}}"],
-              "path": ["categories"]
+              "path": ["categories"],
+              "query": [
+                { "key": "phone", "value": "{{mainPhone}}" }
+              ]
             }
           }
         },
@@ -309,7 +312,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Carnicería Premium\",\n  \"description\": \"Compras de carne y embutidos\"\n}"
+              "raw": "{\n  \"phone\": \"{{mainPhone}}\",\n  \"name\": \"Carnicería Premium\",\n  \"description\": \"Compras de carne y embutidos\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/categories/:id",
@@ -326,9 +329,12 @@
           "request": {
             "method": "DELETE",
             "url": {
-              "raw": "{{baseUrl}}/categories/:id",
+              "raw": "{{baseUrl}}/categories/:id?phone={{mainPhone}}",
               "host": ["{{baseUrl}}"],
               "path": ["categories", ":id"],
+              "query": [
+                { "key": "phone", "value": "{{mainPhone}}" }
+              ],
               "variable": [
                 { "key": "id", "value": "" }
               ]

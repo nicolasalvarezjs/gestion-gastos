@@ -6,11 +6,13 @@ export interface Category {
 }
 
 export interface CreateCategoryDto {
+  phone?: string;
   name: string;
   description?: string;
 }
 
 export interface UpdateCategoryDto {
+  phone?: string;
   name?: string;
   description?: string;
 }

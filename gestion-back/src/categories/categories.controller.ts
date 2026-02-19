@@ -1,41 +1,76 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Request, UseGuards } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Request } from '@nestjs/common';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { UsersService } from '../users/users.service';
 
 interface RequestUser {
-  user: {
+  user?: {
     mainPhone: string;
   };
 }
 
 @Controller('categories')
 export class CategoriesController {
-  constructor(private readonly categoriesService: CategoriesService) {}
+  constructor(
+    private readonly categoriesService: CategoriesService,
+    private readonly usersService: UsersService
+  ) {}
+
+  private async resolveMainPhone(req: RequestUser, phone?: string): Promise<string> {
+    if (req.user?.mainPhone) {
+      return req.user.mainPhone;
+    }
+    if (!phone) {
+      throw new BadRequestException('Phone is required when no token is provided.');
+    }
+    return this.usersService.resolveMainPhone(phone);
+  }
 
   @Post()
-  create(@Request() req: RequestUser, @Body() dto: CreateCategoryDto) {
-    return this.categoriesService.create(req.user.mainPhone, dto);
+  async create(
+    @Request() req: RequestUser,
+    @Body() dto: CreateCategoryDto,
+    @Query('phone') phone?: string
+  ) {
+    const mainPhone = await this.resolveMainPhone(req, phone ?? dto.phone);
+    return this.categoriesService.create(mainPhone, dto);
   }
 
   @Get()
-  findAll(@Request() req: RequestUser) {
-    return this.categoriesService.findAll(req.user.mainPhone);
+  async findAll(@Request() req: RequestUser, @Query('phone') phone?: string) {
+    const mainPhone = await this.resolveMainPhone(req, phone);
+    return this.categoriesService.findAll(mainPhone);
   }
 
   @Get(':id')
-  findOne(@Request() req: RequestUser, @Param('id') id: string) {
-    return this.categoriesService.findOne(req.user.mainPhone, id);
+  async findOne(
+    @Request() req: RequestUser,
+    @Param('id') id: string,
+    @Query('phone') phone?: string
+  ) {
+    const mainPhone = await this.resolveMainPhone(req, phone);
+    return this.categoriesService.findOne(mainPhone, id);
   }
 
   @Patch(':id')
-  update(@Request() req: RequestUser, @Param('id') id: string, @Body() dto: UpdateCategoryDto) {
-    return this.categoriesService.update(req.user.mainPhone, id, dto);
+  async update(
+    @Request() req: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateCategoryDto,
+    @Query('phone') phone?: string
+  ) {
+    const mainPhone = await this.resolveMainPhone(req, phone ?? dto.phone);
+    return this.categoriesService.update(mainPhone, id, dto);
   }
 
   @Delete(':id')
-  remove(@Request() req: RequestUser, @Param('id') id: string) {
-    return this.categoriesService.remove(req.user.mainPhone, id);
+  async remove(
+    @Request() req: RequestUser,
+    @Param('id') id: string,
+    @Query('phone') phone?: string
+  ) {
+    const mainPhone = await this.resolveMainPhone(req, phone);
+    return this.categoriesService.remove(mainPhone, id);
   }
 }

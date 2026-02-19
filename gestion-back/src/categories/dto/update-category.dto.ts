@@ -3,6 +3,10 @@ import { IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateCategoryDto {
 	@IsOptional()
+	@IsString()
+	phone?: string;
+
+	@IsOptional()
 	@Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
 	@IsString()
 	@MaxLength(50)
