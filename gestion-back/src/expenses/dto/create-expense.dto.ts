@@ -1,4 +1,4 @@
-import { IsBoolean, IsDateString, IsNumber, IsPositive, IsString } from 'class-validator';
+import { IsBoolean, IsDateString, IsNumber, IsOptional, IsPositive, IsString } from 'class-validator';
 
 export class CreateExpenseDto {
   @IsString()
@@ -13,6 +13,10 @@ export class CreateExpenseDto {
 
   @IsString()
   category: string;
+
+  @IsOptional()
+  @IsString()
+  categoryDescription?: string;
 
   @IsDateString()
   date: string;

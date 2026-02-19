@@ -25,4 +25,5 @@ Archivos incluidos:
 
 - Si cambias el número principal, actualiza `mainPhone`.
 - Para crear gastos de un número secundario, cambia `expensePhone` por `secondaryPhone`.
+- En bulk, `phone` va en la raíz y cada item incluye `category` y `categoryDescription` opcional.
 - El backend exige JWT en todos los endpoints de `expenses`.

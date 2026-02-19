@@ -50,11 +50,20 @@ export class CategoriesService {
     return existing.save();
   }
 
-  async assertCategoryExists(mainPhone: string, name: string): Promise<string> {
+  async ensureCategoryExists(
+    mainPhone: string,
+    name: string,
+    description?: string
+  ): Promise<string> {
     const normalizedName = this.normalizeName(name);
     const exists = await this.categoryModel.findOne({ mainPhone, name: normalizedName }).exec();
     if (!exists) {
-      throw new BadRequestException('Category does not exist for this family.');
+      const created = new this.categoryModel({
+        mainPhone,
+        name: normalizedName,
+        description: description?.trim() ?? ''
+      });
+      await created.save();
     }
     return normalizedName;
   }

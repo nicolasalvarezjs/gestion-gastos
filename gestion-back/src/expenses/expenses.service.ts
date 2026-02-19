@@ -2,6 +2,7 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage } from 'mongoose';
 import { CreateExpenseDto } from './dto/create-expense.dto';
+import { CreateExpensesDto } from './dto/create-expenses.dto';
 import { ExpensesQueryDto } from './dto/expenses-query.dto';
 import { Expense, ExpenseDocument } from './expenses.schema';
 import {
@@ -23,9 +24,10 @@ export class ExpensesService {
   ) {}
 
   async create(mainPhone: string, dto: CreateExpenseDto): Promise<Expense> {
-    const normalizedCategory = await this.categoriesService.assertCategoryExists(
+    const normalizedCategory = await this.categoriesService.ensureCategoryExists(
       mainPhone,
-      dto.category
+      dto.category,
+      dto.categoryDescription
     );
 
     const created = new this.expenseModel({
@@ -36,24 +38,25 @@ export class ExpensesService {
     return created.save();
   }
 
-  async createMany(mainPhone: string, dtos: CreateExpenseDto[]): Promise<Expense[]> {
+  async createMany(mainPhone: string, dto: CreateExpensesDto): Promise<Expense[]> {
     const familyPhones = await this.usersService.getFamilyPhones(mainPhone);
+    if (!familyPhones.includes(dto.phone)) {
+      throw new BadRequestException('Expense phone is not part of this family.');
+    }
 
     const prepared = await Promise.all(
-      dtos.map(async (dto) => {
-        if (!familyPhones.includes(dto.phone)) {
-          throw new BadRequestException('Expense phone is not part of this family.');
-        }
-
-        const normalizedCategory = await this.categoriesService.assertCategoryExists(
+      dto.expenses.map(async (expense) => {
+        const normalizedCategory = await this.categoriesService.ensureCategoryExists(
           mainPhone,
-          dto.category
+          expense.category,
+          expense.categoryDescription
         );
 
         return {
-          ...dto,
+          ...expense,
+          phone: dto.phone,
           category: normalizedCategory,
-          date: new Date(dto.date)
+          date: new Date(expense.date)
         };
       })
     );

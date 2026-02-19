@@ -44,8 +44,8 @@ export class ExpensesController {
 
   @Post('bulk')
   async createMany(@Request() req: RequestUser, @Body() dto: CreateExpensesDto) {
-    const mainPhone = await this.resolveMainPhone(req, dto.expenses[0]?.phone);
-    return this.expensesService.createMany(mainPhone, dto.expenses);
+    const mainPhone = await this.resolveMainPhone(req, dto.phone);
+    return this.expensesService.createMany(mainPhone, dto);
   }
 
   @Get()
