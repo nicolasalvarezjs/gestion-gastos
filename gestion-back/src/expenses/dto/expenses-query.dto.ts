@@ -1,4 +1,4 @@
-import { IsDateString, IsNumberString, IsOptional } from 'class-validator';
+import { IsDateString, IsNumberString, IsOptional, IsString } from 'class-validator';
 
 export class ExpensesQueryDto {
   @IsOptional()
@@ -12,4 +12,8 @@ export class ExpensesQueryDto {
   @IsOptional()
   @IsNumberString()
   limit?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
 }

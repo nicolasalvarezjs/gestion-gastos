@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { CreateExpensesDto } from './dto/create-expenses.dto';
 import { ExpensesQueryDto } from './dto/expenses-query.dto';
 import { ExpensesService } from './expenses.service';
+import { UsersService } from '../users/users.service';
 import {
   BreakdownItem,
   CategorySummary,
@@ -12,58 +13,79 @@ import {
 } from './expenses.types';
 
 interface RequestUser {
-  user: {
+  user?: {
     mainPhone: string;
   };
 }
 
 @Controller('expenses')
 export class ExpensesController {
-  constructor(private readonly expensesService: ExpensesService) {}
+  constructor(
+    private readonly expensesService: ExpensesService,
+    private readonly usersService: UsersService
+  ) {}
+
+  private async resolveMainPhone(req: RequestUser, phone?: string): Promise<string> {
+    if (req.user?.mainPhone) {
+      return req.user.mainPhone;
+    }
+    if (!phone) {
+      throw new BadRequestException('Phone is required when no token is provided.');
+    }
+    return this.usersService.resolveMainPhone(phone);
+  }
 
   @Post()
   async create(@Request() req: RequestUser, @Body() dto: CreateExpenseDto) {
-    await this.expensesService.assertExpensePhoneBelongsToFamily(req.user.mainPhone, dto.phone);
-    return this.expensesService.create(req.user.mainPhone, dto);
+    const mainPhone = await this.resolveMainPhone(req, dto.phone);
+    await this.expensesService.assertExpensePhoneBelongsToFamily(mainPhone, dto.phone);
+    return this.expensesService.create(mainPhone, dto);
   }
 
   @Post('bulk')
   async createMany(@Request() req: RequestUser, @Body() dto: CreateExpensesDto) {
-    return this.expensesService.createMany(req.user.mainPhone, dto.expenses);
+    const mainPhone = await this.resolveMainPhone(req, dto.expenses[0]?.phone);
+    return this.expensesService.createMany(mainPhone, dto.expenses);
   }
 
   @Get()
   async getAll(@Request() req: RequestUser, @Query() query: ExpensesQueryDto) {
-    return this.expensesService.findAll(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.findAll(mainPhone, query);
   }
 
   @Get('recent')
   async getRecent(@Request() req: RequestUser, @Query() query: ExpensesQueryDto) {
-    return this.expensesService.findRecent(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.findRecent(mainPhone, query);
   }
 
   @Get('by-category')
   async getByCategory(@Request() req: RequestUser, @Query() query: ExpensesQueryDto): Promise<CategorySummary[]> {
-    return this.expensesService.getByCategory(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.getByCategory(mainPhone, query);
   }
 
   @Get('daily-trend')
   async getDailyTrend(@Request() req: RequestUser, @Query() query: ExpensesQueryDto): Promise<DailyTrendPoint[]> {
-    return this.expensesService.getDailyTrend(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.getDailyTrend(mainPhone, query);
   }
 
   @Get('breakdown')
   async getBreakdown(@Request() req: RequestUser, @Query() query: ExpensesQueryDto): Promise<BreakdownItem[]> {
-    return this.expensesService.getBreakdown(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.getBreakdown(mainPhone, query);
   }
 
   @Get('monthly-summary')
   async getMonthlySummary(@Request() req: RequestUser, @Query() query: ExpensesQueryDto): Promise<MonthlySummary> {
-    return this.expensesService.getMonthlySummary(req.user.mainPhone, query);
+    const mainPhone = await this.resolveMainPhone(req, query.phone);
+    return this.expensesService.getMonthlySummary(mainPhone, query);
   }
 
   @Get('insights')
   getInsights(@Request() req: RequestUser): Promise<InsightItem[]> {
-    return this.expensesService.getInsights(req.user.mainPhone);
+    return this.resolveMainPhone(req).then((mainPhone) => this.expensesService.getInsights(mainPhone));
   }
 }

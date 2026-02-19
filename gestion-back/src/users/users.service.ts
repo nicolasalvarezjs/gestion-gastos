@@ -38,6 +38,14 @@ export class UsersService {
       .exec();
   }
 
+  async resolveMainPhone(phone: string): Promise<string> {
+    const user = await this.findByAnyPhone(phone);
+    if (!user) {
+      throw new BadRequestException('Phone is not assigned to any family.');
+    }
+    return user.mainPhone;
+  }
+
   async getByMainPhone(mainPhone: string): Promise<User> {
     const user = await this.userModel.findOne({ mainPhone }).exec();
     if (!user) {
