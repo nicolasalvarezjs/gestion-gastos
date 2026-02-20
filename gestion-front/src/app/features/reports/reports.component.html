@@ -1,0 +1,89 @@
+<div class="page">
+  <div class="page__inner reports">
+    <section class="reports__filters">
+      <label>
+        <span>{{ 'reports.periodMode' | translate }}</span>
+        <select [(ngModel)]="periodMode">
+          <option value="year">{{ 'reports.periodYear' | translate }}</option>
+          <option value="range">{{ 'reports.periodRange' | translate }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="periodMode === 'year'">
+        <span>{{ 'reports.year' | translate }}</span>
+        <select [(ngModel)]="selectedYear">
+          <option *ngFor="let year of years" [value]="year">{{ year }}</option>
+        </select>
+      </label>
+
+      <label *ngIf="periodMode === 'range'">
+        <span>{{ 'reports.startDate' | translate }}</span>
+        <input type="date" [(ngModel)]="startDate" />
+      </label>
+
+      <label *ngIf="periodMode === 'range'">
+        <span>{{ 'reports.endDate' | translate }}</span>
+        <input type="date" [(ngModel)]="endDate" />
+      </label>
+
+      <button type="button" (click)="applyFilters()">{{ 'table.filter' | translate }}</button>
+    </section>
+
+    <section class="reports__stats" *ngIf="reportStats$ | async as stats">
+      <article>
+        <p>{{ 'reports.total' | translate }}</p>
+        <h3>{{ formatAmount(stats.total) }}</h3>
+      </article>
+      <article>
+        <p>{{ 'reports.avgTicket' | translate }}</p>
+        <h3>{{ formatAmount(stats.avgTicket) }}</h3>
+      </article>
+      <article>
+        <p>{{ 'reports.topCategory' | translate }}</p>
+        <h3>{{ stats.topCategory ? stats.topCategory.category : '-' }}</h3>
+      </article>
+      <article>
+        <p>{{ 'reports.biggestExpense' | translate }}</p>
+        <h3>{{ stats.biggestExpense ? formatAmount(stats.biggestExpense.amount) : '-' }}</h3>
+      </article>
+    </section>
+
+    <section class="reports__table">
+      <h3>{{ 'reports.byCategory' | translate }}</h3>
+      <table *ngIf="byCategory$ | async as categories">
+        <thead>
+          <tr>
+            <th>{{ 'table.category' | translate }}</th>
+            <th>{{ 'table.amount' | translate }}</th>
+            <th>%</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of categories">
+            <td>{{ item.category }}</td>
+            <td>{{ formatAmount(item.total) }}</td>
+            <td>{{ item.percentage }}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="reports__table">
+      <h3>{{ 'reports.topMerchants' | translate }}</h3>
+      <table *ngIf="topMerchants$ | async as merchants">
+        <thead>
+          <tr>
+            <th>{{ 'analysis.breakdownMerchant' | translate }}</th>
+            <th>{{ 'table.amount' | translate }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of merchants">
+            <td>{{ item.merchant }}</td>
+            <td>{{ formatAmount(item.total) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </div>
+</div>

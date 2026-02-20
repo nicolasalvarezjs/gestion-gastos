@@ -68,6 +68,20 @@ export class CategoriesService {
     return normalizedName;
   }
 
+  async assertCategoryExists(mainPhone: string, name: string): Promise<string> {
+    const normalizedName = this.normalizeName(name);
+    if (!normalizedName) {
+      throw new BadRequestException('Category name is required.');
+    }
+
+    const exists = await this.categoryModel.findOne({ mainPhone, name: normalizedName }).exec();
+    if (!exists) {
+      throw new NotFoundException('Category not found.');
+    }
+
+    return normalizedName;
+  }
+
   async remove(mainPhone: string, id: string): Promise<{ deleted: true }> {
     const result = await this.categoryModel.deleteOne({ _id: id, mainPhone }).exec();
     if (result.deletedCount === 0) {

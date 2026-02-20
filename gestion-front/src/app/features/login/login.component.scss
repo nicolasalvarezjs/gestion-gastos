@@ -8,7 +8,7 @@
 }
 
 .login__card {
-  width: min(100%, 380px);
+  width: min(100%, 420px);
   background: #ffffff;
   border-radius: 28px;
   border: 1px solid #e2e8f0;
@@ -58,6 +58,40 @@
   padding: 0 14px;
   font-size: 15px;
   font-weight: 700;
+}
+
+.login__phone-group {
+  display: grid;
+  grid-template-columns: minmax(130px, 42%) minmax(0, 1fr);
+  gap: 8px;
+  width: 100%;
+}
+
+.login__phone-group select {
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid #dbe3ec;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 700;
+  background: #ffffff;
+  width: 100%;
+  min-width: 0;
+}
+
+.login__phone-group input {
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 640px) {
+  .login__card {
+    padding: 20px;
+  }
+
+  .login__phone-group {
+    grid-template-columns: 1fr;
+  }
 }
 
 .login__form button {

@@ -125,10 +125,27 @@
   padding: 8px 16px;
   border: 1px solid #e5e7eb;
   background: #ffffff;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--color-text-main);
   transition: background 0.2s ease;
+}
+
+.app-header__date select {
+  border: none;
+  background: transparent;
+  color: var(--color-text-main);
+  font-size: 12px;
+  font-weight: 700;
+  outline: none;
+  max-width: 92px;
+}
+
+.app-header__month-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: capitalize;
+  color: var(--color-text-sub);
 }
 
 .app-header__lang {

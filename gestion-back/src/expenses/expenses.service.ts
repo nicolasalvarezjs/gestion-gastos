@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage } from 'mongoose';
 import { CreateExpenseDto } from './dto/create-expense.dto';
@@ -65,19 +65,40 @@ export class ExpensesService {
   }
 
   async findAll(mainPhone: string, query: ExpensesQueryDto): Promise<Expense[]> {
-    const filter = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
+    const filter = await this.buildFamilyDateFilter(
+      mainPhone,
+      query.start,
+      query.end,
+      query.category,
+      query.search,
+      query.status
+    );
     return this.expenseModel.find(filter).sort({ date: -1 }).exec();
   }
 
   async findRecent(mainPhone: string, query: ExpensesQueryDto): Promise<Expense[]> {
-    const filter = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
+    const filter = await this.buildFamilyDateFilter(
+      mainPhone,
+      query.start,
+      query.end,
+      query.category,
+      query.search,
+      query.status
+    );
     const limit = Number(query.limit ?? 10);
     return this.expenseModel.find(filter).sort({ date: -1 }).limit(limit).exec();
   }
 
   async getByCategory(mainPhone: string, query: ExpensesQueryDto): Promise<CategorySummary[]> {
     const pipeline: PipelineStage[] = [];
-    const match = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
+    const match = await this.buildFamilyDateFilter(
+      mainPhone,
+      query.start,
+      query.end,
+      query.category,
+      query.search,
+      query.status
+    );
     if (Object.keys(match).length > 0) {
       pipeline.push({ $match: match });
     }
@@ -101,7 +122,14 @@ export class ExpensesService {
 
   async getDailyTrend(mainPhone: string, query: ExpensesQueryDto): Promise<DailyTrendPoint[]> {
     const pipeline: PipelineStage[] = [];
-    const match = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
+    const match = await this.buildFamilyDateFilter(
+      mainPhone,
+      query.start,
+      query.end,
+      query.category,
+      query.search,
+      query.status
+    );
     if (Object.keys(match).length > 0) {
       pipeline.push({ $match: match });
     }
@@ -118,7 +146,14 @@ export class ExpensesService {
   }
 
   async getBreakdown(mainPhone: string, query: ExpensesQueryDto): Promise<BreakdownItem[]> {
-    const filter = await this.buildFamilyDateFilter(mainPhone, query.start, query.end);
+    const filter = await this.buildFamilyDateFilter(
+      mainPhone,
+      query.start,
+      query.end,
+      query.category,
+      query.search,
+      query.status
+    );
     const limit = Number(query.limit ?? 4);
     const expenses = await this.expenseModel.find(filter).sort({ date: -1 }).limit(limit).exec();
     return expenses.map((expense) => ({
@@ -190,6 +225,31 @@ export class ExpensesService {
     ];
   }
 
+  async remove(mainPhone: string, id: string): Promise<{ deleted: true }> {
+    const expense = await this.expenseModel.findById(id).exec();
+    if (!expense) {
+      throw new NotFoundException('Expense not found.');
+    }
+
+    await this.assertExpensePhoneBelongsToFamily(mainPhone, expense.phone);
+    await this.expenseModel.deleteOne({ _id: id }).exec();
+
+    return { deleted: true };
+  }
+
+  async updateCategory(mainPhone: string, id: string, category: string): Promise<Expense> {
+    const expense = await this.expenseModel.findById(id).exec();
+    if (!expense) {
+      throw new NotFoundException('Expense not found.');
+    }
+
+    await this.assertExpensePhoneBelongsToFamily(mainPhone, expense.phone);
+    const normalizedCategory = await this.categoriesService.assertCategoryExists(mainPhone, category);
+    expense.category = normalizedCategory;
+
+    return expense.save();
+  }
+
   async assertExpensePhoneBelongsToFamily(mainPhone: string, expensePhone: string): Promise<void> {
     const familyPhones = await this.usersService.getFamilyPhones(mainPhone);
     if (!familyPhones.includes(expensePhone)) {
@@ -214,12 +274,32 @@ export class ExpensesService {
   private async buildFamilyDateFilter(
     mainPhone: string,
     start?: string,
-    end?: string
+    end?: string,
+    category?: string,
+    search?: string,
+    status?: string
   ): Promise<FilterQuery<ExpenseDocument>> {
     const familyPhones = await this.usersService.getFamilyPhones(mainPhone);
     const dateFilter = this.buildDateFilter(start, end);
+
+    const normalizedCategory = category?.trim().toLowerCase();
+    const normalizedSearch = search?.trim();
+    const normalizedStatus = status?.trim().toLowerCase();
+
+    let amountFilter: FilterQuery<ExpenseDocument> | undefined;
+    if (normalizedStatus === 'confirmed') {
+      amountFilter = { amount: { $gt: 0 } };
+    } else if (normalizedStatus === 'flagged') {
+      amountFilter = { amount: { $lte: 0 } };
+    } else if (normalizedStatus === 'pending') {
+      amountFilter = { amount: { $eq: 0 } };
+    }
+
     return {
       ...dateFilter,
+      ...(normalizedCategory ? { category: normalizedCategory } : {}),
+      ...(normalizedSearch ? { description: { $regex: normalizedSearch, $options: 'i' } } : {}),
+      ...(amountFilter ?? {}),
       phone: { $in: familyPhones }
     };
   }

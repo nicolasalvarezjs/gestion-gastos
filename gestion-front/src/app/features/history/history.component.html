@@ -20,40 +20,41 @@
     <div class="history__toolbar">
       <div class="history__search">
         <span class="material-symbols-outlined">search</span>
-        <input type="text" [placeholder]="'history.searchPlaceholder' | translate" />
-        <button class="history__search-filter" type="button" aria-label="Filters">
+        <input
+          type="text"
+          [placeholder]="'history.searchPlaceholder' | translate"
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="applyFilters()"
+        />
+        <button class="history__search-filter" type="button" aria-label="Filters" (click)="applyFilters()">
           <span class="material-symbols-outlined">tune</span>
         </button>
       </div>
       <div class="history__filters">
         <label class="history__select">
           <span>{{ 'history.filterDate' | translate }}</span>
-          <select>
-            <option *ngFor="let option of dateRangeOptions" [value]="option">
-              {{ option | translate }}
+          <select [(ngModel)]="selectedDateRange">
+            <option *ngFor="let option of dateRangeOptions" [value]="option.value">
+              {{ option.labelKey | translate }}
             </option>
           </select>
         </label>
         <label class="history__select">
           <span>{{ 'history.filterCategory' | translate }}</span>
-          <select>
+          <select [(ngModel)]="selectedCategory">
             <option value="">{{ 'history.filterCategoryAll' | translate }}</option>
             <option *ngFor="let option of (categoryOptions$ | async) ?? []" [value]="option">
               {{ option }}
             </option>
           </select>
         </label>
-        <label class="history__select">
-          <span>{{ 'history.filterStatus' | translate }}</span>
-          <select>
-            <option *ngFor="let option of statusOptions" [value]="option">
-              {{ option | translate }}
-            </option>
-          </select>
-        </label>
-        <button class="history__filters-more" type="button">
+        <button class="history__filters-more" type="button" (click)="applyFilters()">
           <span class="material-symbols-outlined">filter_list</span>
-          {{ 'history.moreFilters' | translate }}
+          {{ 'table.filter' | translate }}
+        </button>
+        <button class="history__filters-more" type="button" (click)="clearFilters()">
+          <span class="material-symbols-outlined">close</span>
+          {{ 'categories.clear' | translate }}
         </button>
       </div>
     </div>
@@ -66,7 +67,6 @@
             <th>{{ 'history.table.originalMessage' | translate }}</th>
             <th>{{ 'history.table.interpretedAmount' | translate }}</th>
             <th>{{ 'table.category' | translate }}</th>
-            <th>{{ 'history.table.status' | translate }}</th>
             <th class="text-right">{{ 'history.table.actions' | translate }}</th>
           </tr>
         </thead>
@@ -95,31 +95,39 @@
                 {{ getCategoryLabelKey(tx.category) | translate }}
               </span>
             </td>
-            <td>
-              <span
-                class="status"
-                [ngClass]="{
-                  'status--confirmed': getStatusForExpense(tx) === status.Confirmed,
-                  'status--pending': getStatusForExpense(tx) === status.Pending,
-                  'status--flagged': getStatusForExpense(tx) === status.Flagged
-                }"
-              >
-                <span class="material-symbols-outlined fill-icon">
-                  {{
-                    getStatusForExpense(tx) === status.Confirmed
-                      ? 'check_circle'
-                      : getStatusForExpense(tx) === status.Pending
-                        ? 'hourglass_empty'
-                        : 'flag'
-                  }}
-                </span>
-                {{ getStatusLabelKey(getStatusForExpense(tx)) | translate }}
-              </span>
-            </td>
             <td class="text-right">
-              <button class="row-action" type="button">
-                <span class="material-symbols-outlined">more_vert</span>
-              </button>
+              <div class="row-actions">
+                <select
+                  class="row-actions__select"
+                  [ngModel]="selectedCategoryByExpenseId[tx._id ?? ''] || tx.category"
+                  (ngModelChange)="onCategoryChange(tx._id, $event)"
+                  [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+                >
+                  <option *ngFor="let option of (categoryOptions$ | async) ?? []" [value]="option">
+                    {{ option }}
+                  </option>
+                </select>
+
+                <button
+                  class="row-action"
+                  type="button"
+                  (click)="reassignCategory(tx)"
+                  [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+                  title="Asociar"
+                >
+                  <span class="material-symbols-outlined">sync_alt</span>
+                </button>
+
+                <button
+                  class="row-action row-action--danger"
+                  type="button"
+                  (click)="deleteExpense(tx)"
+                  [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+                  title="Eliminar"
+                >
+                  <span class="material-symbols-outlined">delete</span>
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -168,29 +176,40 @@
             </span>
             {{ getCategoryLabelKey(tx.category) | translate }}
           </span>
-          <span
-            class="status"
-            [ngClass]="{
-              'status--confirmed': getStatusForExpense(tx) === status.Confirmed,
-              'status--pending': getStatusForExpense(tx) === status.Pending,
-              'status--flagged': getStatusForExpense(tx) === status.Flagged
-            }"
-          >
-            <span class="material-symbols-outlined fill-icon">
-              {{
-                getStatusForExpense(tx) === status.Confirmed
-                  ? 'check_circle'
-                  : getStatusForExpense(tx) === status.Pending
-                    ? 'hourglass_empty'
-                    : 'flag'
-              }}
-            </span>
-            {{ getStatusLabelKey(getStatusForExpense(tx)) | translate }}
-          </span>
         </div>
-        <button class="row-action" type="button">
-          <span class="material-symbols-outlined">more_vert</span>
-        </button>
+
+        <div class="row-actions row-actions--mobile">
+          <select
+            class="row-actions__select"
+            [ngModel]="selectedCategoryByExpenseId[tx._id ?? ''] || tx.category"
+            (ngModelChange)="onCategoryChange(tx._id, $event)"
+            [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+          >
+            <option *ngFor="let option of (categoryOptions$ | async) ?? []" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+
+          <button
+            class="row-action"
+            type="button"
+            (click)="reassignCategory(tx)"
+            [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+            title="Asociar"
+          >
+            <span class="material-symbols-outlined">sync_alt</span>
+          </button>
+
+          <button
+            class="row-action row-action--danger"
+            type="button"
+            (click)="deleteExpense(tx)"
+            [disabled]="updatingExpenseId === tx._id || deletingExpenseId === tx._id"
+            title="Eliminar"
+          >
+            <span class="material-symbols-outlined">delete</span>
+          </button>
+        </div>
       </article>
     </div>
   </div>

@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { NgFor } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { TranslatePipe } from '../shared/i18n/translate.pipe';
+import { AuthService } from '../shared/services/auth.service';
+import { ConfirmDialogService } from '../shared/services/confirm-dialog.service';
 
 interface SidebarItem {
   labelKey: string;
@@ -18,6 +20,12 @@ interface SidebarItem {
 })
 export class AppSidebarComponent {
   @Input() isOpen = false;
+
+  constructor(
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly confirmDialogService: ConfirmDialogService
+  ) {}
 
   readonly items: SidebarItem[] = [
     { labelKey: 'nav.dashboard', icon: 'dashboard', path: '/dashboard' },
@@ -37,4 +45,21 @@ export class AppSidebarComponent {
     icon: 'settings',
     path: '/settings'
   };
+
+  async logout(): Promise<void> {
+    const confirmed = await this.confirmDialogService.confirm({
+      title: '¿Salir de la app?',
+      message: 'Tu sesión actual se cerrará en este dispositivo.',
+      confirmText: 'Salir',
+      cancelText: 'Cancelar',
+      variant: 'danger'
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.authService.logout();
+    this.router.navigateByUrl('/login');
+  }
 }

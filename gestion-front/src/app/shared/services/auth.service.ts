@@ -45,8 +45,7 @@ export class AuthService {
     this.tokenSignal.set(null);
     this.userSignal.set(null);
     this.phoneSignal.set(null);
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(PHONE_KEY);
+    localStorage.clear();
   }
 
   setActivePhone(phone: string): void {

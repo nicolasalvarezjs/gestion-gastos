@@ -30,6 +30,21 @@ export class UsersService {
     return user.save();
   }
 
+  async removeSecondary(mainPhone: string, phone: string): Promise<User> {
+    const user = await this.userModel.findOne({ mainPhone }).exec();
+    if (!user) {
+      throw new NotFoundException('Main phone not found.');
+    }
+
+    const exists = user.secondaryPhones.includes(phone);
+    if (!exists) {
+      throw new NotFoundException('Secondary phone not found.');
+    }
+
+    user.secondaryPhones = user.secondaryPhones.filter((item) => item !== phone);
+    return user.save();
+  }
+
   async findByAnyPhone(phone: string): Promise<User | null> {
     return this.userModel
       .findOne({
@@ -48,6 +63,14 @@ export class UsersService {
 
   async getByMainPhone(mainPhone: string): Promise<User> {
     const user = await this.userModel.findOne({ mainPhone }).exec();
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+    return user;
+  }
+
+  async getByPhone(phone: string): Promise<User> {
+    const user = await this.findByAnyPhone(phone);
     if (!user) {
       throw new NotFoundException('User not found.');
     }

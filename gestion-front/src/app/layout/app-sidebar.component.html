@@ -40,15 +40,9 @@
       <span class="sidebar__link-text">{{ settingsItem.labelKey | translate }}</span>
     </a>
 
-    <div class="sidebar__profile">
-      <img
-        src="https://picsum.photos/id/64/100/100"
-        alt="Jane Doe"
-      />
-      <div class="sidebar__profile-text">
-        <p>Jane Doe</p>
-          <span>{{ 'profile.plan' | translate }}</span>
-      </div>
-    </div>
+    <button class="sidebar__link sidebar__link--logout" type="button" (click)="logout()">
+      <span class="material-symbols-outlined">logout</span>
+      <span class="sidebar__link-text">{{ 'header.logout' | translate }}</span>
+    </button>
   </div>
 </aside>

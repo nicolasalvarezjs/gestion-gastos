@@ -3,11 +3,12 @@ import { AsyncPipe, DatePipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartData, ChartOptions } from 'chart.js';
-import { combineLatest, map } from 'rxjs';
+import { combineLatest, map, switchMap } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
 import { I18nService } from '../../shared/i18n/i18n.service';
 import { ExpensesService } from '../../shared/services/expenses.service';
+import { DateRangeService } from '../../shared/services/date-range.service';
 import {
   CategorySummary,
   DailyTrendPoint,
@@ -31,11 +32,26 @@ interface CategoryMeta {
 export class DashboardComponent {
   private readonly i18n = inject(I18nService);
   private readonly expensesService = inject(ExpensesService);
+  private readonly dateRangeService = inject(DateRangeService);
 
-  readonly recentTransactions$ = this.expensesService.getRecent(4);
-  readonly categorySummary$ = this.expensesService.getByCategory();
-  readonly dailyTrend$ = this.expensesService.getDailyTrend();
-  readonly monthlySummary$ = this.expensesService.getMonthlySummary();
+  private readonly selectedMonth$ = toObservable(this.dateRangeService.selectedMonth);
+
+  readonly recentTransactions$ = this.selectedMonth$.pipe(
+    map(() => null),
+    switchMap(() => this.expensesService.getRecent(4))
+  );
+  readonly categorySummary$ = this.selectedMonth$.pipe(
+    map(() => null),
+    switchMap(() => this.expensesService.getByCategory())
+  );
+  readonly dailyTrend$ = this.selectedMonth$.pipe(
+    map(() => null),
+    switchMap(() => this.expensesService.getDailyTrend())
+  );
+  readonly monthlySummary$ = this.selectedMonth$.pipe(
+    map(() => null),
+    switchMap(() => this.expensesService.getMonthlySummary())
+  );
   readonly topCategory$ = this.categorySummary$.pipe(map((items) => items[0] ?? null));
   private readonly language$ = toObservable(this.i18n.language);
 

@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, Request } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Request } from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { CreateExpensesDto } from './dto/create-expenses.dto';
 import { ExpensesQueryDto } from './dto/expenses-query.dto';
+import { UpdateExpenseCategoryDto } from './dto/update-expense-category.dto';
 import { ExpensesService } from './expenses.service';
 import { UsersService } from '../users/users.service';
 import {
@@ -87,5 +88,22 @@ export class ExpensesController {
   @Get('insights')
   getInsights(@Request() req: RequestUser): Promise<InsightItem[]> {
     return this.resolveMainPhone(req).then((mainPhone) => this.expensesService.getInsights(mainPhone));
+  }
+
+  @Delete(':id')
+  async remove(@Request() req: RequestUser, @Param('id') id: string, @Query('phone') phone?: string) {
+    const mainPhone = await this.resolveMainPhone(req, phone);
+    return this.expensesService.remove(mainPhone, id);
+  }
+
+  @Patch(':id/category')
+  async updateCategory(
+    @Request() req: RequestUser,
+    @Param('id') id: string,
+    @Body() dto: UpdateExpenseCategoryDto,
+    @Query('phone') phone?: string
+  ) {
+    const mainPhone = await this.resolveMainPhone(req, phone ?? dto.phone);
+    return this.expensesService.updateCategory(mainPhone, id, dto.category);
   }
 }

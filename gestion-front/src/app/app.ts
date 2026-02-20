@@ -6,10 +6,11 @@ import { toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { AppHeaderComponent } from './layout/app-header.component';
 import { AppSidebarComponent } from './layout/app-sidebar.component';
 import { I18nService } from './shared/i18n/i18n.service';
+import { ConfirmDialogComponent } from './shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, AppHeaderComponent, AppSidebarComponent, AsyncPipe, NgIf],
+  imports: [RouterOutlet, AppHeaderComponent, AppSidebarComponent, ConfirmDialogComponent, AsyncPipe, NgIf],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })

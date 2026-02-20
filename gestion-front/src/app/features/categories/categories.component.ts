@@ -5,6 +5,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TranslatePipe } from '../../shared/i18n/translate.pipe';
 import { Category } from '../../shared/models/category.models';
 import { CategoriesService } from '../../shared/services/categories.service';
+import { ConfirmDialogService } from '../../shared/services/confirm-dialog.service';
 
 @Component({
   selector: 'app-categories',
@@ -15,6 +16,7 @@ import { CategoriesService } from '../../shared/services/categories.service';
 })
 export class CategoriesComponent {
   private readonly categoriesService = inject(CategoriesService);
+  private readonly confirmDialogService = inject(ConfirmDialogService);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly categories = signal<Category[]>([]);
@@ -83,12 +85,24 @@ export class CategoriesComponent {
     this.description = category.description ?? '';
   }
 
-  remove(id: string): void {
+  async remove(category: Category): Promise<void> {
+    const confirmed = await this.confirmDialogService.confirm({
+      title: '¿Eliminar categoría?',
+      message: `La categoría "${category.name}" se eliminará de forma permanente.`,
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar',
+      variant: 'danger'
+    });
+
+    if (!confirmed) {
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
 
     this.categoriesService
-      .remove(id)
+      .remove(category._id)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {

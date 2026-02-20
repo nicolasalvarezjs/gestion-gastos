@@ -4,7 +4,8 @@ import { CategoriesComponent } from './features/categories/categories.component'
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { HistoryComponent } from './features/history/history.component';
 import { LoginComponent } from './features/login/login.component';
-import { PlaceholderComponent } from './features/placeholder/placeholder.component';
+import { ReportsComponent } from './features/reports/reports.component';
+import { SettingsComponent } from './features/settings/settings.component';
 import { authGuard } from './shared/guards/auth.guard';
 import { guestGuard } from './shared/guards/guest.guard';
 
@@ -47,13 +48,13 @@ export const routes: Routes = [
 	{
 		path: 'reports',
 		canActivate: [authGuard],
-		component: PlaceholderComponent,
+		component: ReportsComponent,
 		data: { titleKey: 'nav.reports' }
 	},
 	{
 		path: 'settings',
 		canActivate: [authGuard],
-		component: PlaceholderComponent,
+		component: SettingsComponent,
 		data: { titleKey: 'nav.settings' }
 	},
 	{

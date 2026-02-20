@@ -6,10 +6,32 @@
     <form *ngIf="step() === 1" (ngSubmit)="requestCode()" class="login__form">
       <label>
         <span>{{ 'login.phone' | translate }}</span>
-        <input type="tel" [(ngModel)]="phone" name="phone" required />
+        <div class="login__phone-group">
+          <select
+            [ngModel]="selectedCountryIso"
+            (ngModelChange)="onCountryChange($event)"
+            name="country"
+            required
+          >
+            <option *ngFor="let country of countries" [value]="country.iso">
+              {{ country.label }} ({{ country.dialCode }})
+            </option>
+          </select>
+
+          <input
+            type="tel"
+            inputmode="numeric"
+            autocomplete="tel-national"
+            placeholder="11XXXXXXXX"
+            [ngModel]="phoneNumber"
+            (ngModelChange)="onPhoneInput($event)"
+            name="phone"
+            required
+          />
+        </div>
       </label>
 
-      <button type="submit" [disabled]="isLoading() || !phone">
+      <button type="submit" [disabled]="isLoading() || !phoneNumber">
         {{ isLoading() ? ('login.loading' | translate) : ('login.sendCode' | translate) }}
       </button>
     </form>
@@ -17,7 +39,16 @@
     <form *ngIf="step() === 2" (ngSubmit)="verifyCode()" class="login__form">
       <label>
         <span>{{ 'login.code' | translate }}</span>
-        <input type="text" maxlength="6" [(ngModel)]="code" name="code" required />
+        <input
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          maxlength="6"
+          [ngModel]="code"
+          (ngModelChange)="onCodeInput($event)"
+          name="code"
+          required
+        />
       </label>
 
       <button type="submit" [disabled]="isLoading() || code.length !== 6">

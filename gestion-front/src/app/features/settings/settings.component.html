@@ -1,0 +1,67 @@
+<div class="page">
+  <div class="page__inner settings">
+    <section class="settings__card">
+      <h2>{{ 'settings.familyPhones' | translate }}</h2>
+
+      <ng-container *ngIf="profile$ | async as profile; else loadingProfile">
+        <div class="settings__phones">
+          <article class="settings__phone settings__phone--main">
+            <span class="material-symbols-outlined">verified_user</span>
+            <div>
+              <p>{{ 'settings.mainPhone' | translate }}</p>
+              <strong>{{ profile.mainPhone }}</strong>
+            </div>
+          </article>
+
+          <article class="settings__phone" *ngFor="let phone of profile.secondaryPhones">
+            <span class="material-symbols-outlined">phone_iphone</span>
+            <div>
+              <p>{{ 'settings.secondaryPhone' | translate }}</p>
+              <strong>{{ phone }}</strong>
+            </div>
+            <button
+              type="button"
+              class="settings__remove"
+              (click)="removeSecondary(phone)"
+              [disabled]="removingPhone === phone"
+            >
+              {{ 'categories.delete' | translate }}
+            </button>
+          </article>
+        </div>
+      </ng-container>
+
+      <ng-template #loadingProfile>
+        <p class="settings__hint">{{ 'login.loading' | translate }}</p>
+      </ng-template>
+
+      <form class="settings__form" (ngSubmit)="addSecondary()">
+        <label>
+          <span>{{ 'settings.addSecondary' | translate }}</span>
+          <div class="settings__phone-inputs">
+            <select [(ngModel)]="selectedCountryIso" name="secondaryCountry" required>
+              <option *ngFor="let country of countries" [value]="country.iso">
+                {{ country.label }} ({{ country.dialCode }})
+              </option>
+            </select>
+
+            <input
+              type="tel"
+              inputmode="numeric"
+              [ngModel]="secondaryLocalNumber"
+              (ngModelChange)="secondaryLocalNumber = $event"
+              name="secondaryPhone"
+              placeholder="11XXXXXXXX"
+              required
+            />
+          </div>
+        </label>
+        <button type="submit" [disabled]="isSaving || !secondaryLocalNumber || !activeMainPhone">
+          {{ 'settings.addButton' | translate }}
+        </button>
+      </form>
+
+      <p class="settings__error" *ngIf="errorMessage">{{ errorMessage | translate }}</p>
+    </section>
+  </div>
+</div>

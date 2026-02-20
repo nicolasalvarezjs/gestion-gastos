@@ -1,0 +1,17 @@
+<div class="confirm-dialog" *ngIf="dialogState().open">
+  <button class="confirm-dialog__backdrop" type="button" (click)="onCancel()" aria-label="Close"></button>
+
+  <section class="confirm-dialog__panel" [class.confirm-dialog__panel--danger]="dialogState().variant === 'danger'">
+    <h3>{{ dialogState().title }}</h3>
+    <p>{{ dialogState().message }}</p>
+
+    <div class="confirm-dialog__actions">
+      <button class="confirm-dialog__btn confirm-dialog__btn--ghost" type="button" (click)="onCancel()">
+        {{ dialogState().cancelText }}
+      </button>
+      <button class="confirm-dialog__btn" type="button" (click)="onAccept()">
+        {{ dialogState().confirmText }}
+      </button>
+    </div>
+  </section>
+</div>

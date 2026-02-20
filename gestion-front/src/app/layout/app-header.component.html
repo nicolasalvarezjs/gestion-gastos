@@ -28,10 +28,14 @@
       {{ 'lang.toggle' | translate }}
     </button>
 
-    <button class="app-header__date" type="button">
+    <label class="app-header__date" aria-label="Month filter">
       <span class="material-symbols-outlined">calendar_month</span>
-      <span>{{ currentMonthLabel() }}</span>
-      <span class="material-symbols-outlined">expand_more</span>
-    </button>
+      <select [ngModel]="selectedMonth()" (ngModelChange)="onMonthChange($event)">
+        <option *ngFor="let option of monthOptions()" [value]="option">
+          {{ option }}
+        </option>
+      </select>
+      <span class="app-header__month-label">{{ currentMonthLabel() }}</span>
+    </label>
   </div>
 </header>

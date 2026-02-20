@@ -75,13 +75,43 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 20px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
   border-radius: 999px;
   border: 1px solid #e5e7eb;
   background: #ffffff;
   font-size: 13px;
   font-weight: 800;
   color: var(--color-text-main);
+}
+
+.analysis__daterange select,
+.analysis__daterange input {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 10px;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.analysis__daterange button {
+  border: none;
+  border-radius: 10px;
+  height: 34px;
+  padding: 0 12px;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.analysis__daterange-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-sub);
 }
 
 .analysis__main-card {

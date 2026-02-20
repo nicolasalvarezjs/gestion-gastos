@@ -17,13 +17,18 @@
             <p>{{ 'analysis.subtitle' | translate }}</p>
           </div>
         </div>
-        <button class="analysis__daterange" type="button">
+        <div class="analysis__daterange">
           <span class="material-symbols-outlined">calendar_today</span>
-          <span *ngIf="monthlySummary$ | async as summary">
+          <select [ngModel]="selectedMonth" (ngModelChange)="onMonthChange($event)">
+            <option *ngFor="let option of monthOptions()" [value]="option">{{ option }}</option>
+          </select>
+          <input type="date" [(ngModel)]="customStartDate" />
+          <input type="date" [(ngModel)]="customEndDate" />
+          <button type="button" (click)="applyCustomDateRange()">{{ 'table.filter' | translate }}</button>
+          <span class="analysis__daterange-label" *ngIf="monthlySummary$ | async as summary">
             {{ 'analysis.dateRangeDynamic' | translate: getDateRangeLabel(summary.periodStart, summary.periodEnd) }}
           </span>
-          <span class="material-symbols-outlined">expand_more</span>
-        </button>
+        </div>
       </div>
     </div>
 
